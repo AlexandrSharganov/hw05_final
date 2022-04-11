@@ -92,6 +92,7 @@ class Comment(PubDateModel):
     text = models.TextField(
         verbose_name='текст комментария',
         help_text='Напишите комментарий')
+
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
@@ -103,12 +104,13 @@ class Follow(models.Model):
         User,
         related_name='follower',
         on_delete=models.CASCADE,
-        )
+    )
     author = models.ForeignKey(
         User,
         related_name='following',
         on_delete=models.CASCADE,
     )
+
     class Meta:
         verbose_name = 'подписка'
         verbose_name_plural = 'подписки'

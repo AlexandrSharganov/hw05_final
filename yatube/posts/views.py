@@ -106,7 +106,7 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
-    post = get_object_or_404(Post, pk=post_id) 
+    post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -120,7 +120,7 @@ def add_comment(request, post_id):
 def follow_index(request):
     template = 'posts/follow.html'
     authors_ids = request.user.follower.values_list('author', flat=True)
-    posts=  Post.objects.filter(author__in=authors_ids)
+    posts = Post.objects.filter(author__in=authors_ids)
     page_obj = paginator_use(request, posts, settings.AMOUNT_POSTS)
     context = {
         'page_obj': page_obj,
@@ -142,6 +142,7 @@ def profile_follow(request, username):
                 author=author
             )
     return redirect('posts:profile', username)
+
 
 @login_required
 def profile_unfollow(request, username):

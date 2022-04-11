@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-import time
 
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
@@ -215,7 +214,7 @@ class PostPagesTests(TestCase):
     def test_profile_follow(self):
         """Авторизованный пользователь добавляет подписку."""
         follow_count = Follow.objects.count()
-        self.authorized_client.get(f'/profile/TestAuthor/follow/')
+        self.authorized_client.get('/profile/TestAuthor/follow/')
         self.assertEqual(Follow.objects.count(), follow_count + 1)
         self.assertTrue(
             Follow.objects.filter(
@@ -227,8 +226,8 @@ class PostPagesTests(TestCase):
     def test_new_post_in_follow_page(self):
         """Проверяем что новый пост появился в ленте у подписчика"""
         Follow.objects.create(
-            user = self.user,
-            author = self.test_author
+            user=self.user,
+            author=self.test_author
         )
         form_data = {
             'text': 'Новый поста для подписчика',
@@ -250,7 +249,6 @@ class PostPagesTests(TestCase):
             profile_page.context['page_obj'][0],
             follow_page.context['page_obj'][0]
         )
-        
 
 
 class PaginatorViewsTest(TestCase):

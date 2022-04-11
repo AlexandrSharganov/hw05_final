@@ -45,7 +45,7 @@ class PostsURLTests(TestCase):
             f'/profile/{self.test_author.username}/': 'posts/profile.html',
             f'/posts/{self.test_post.pk}/': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
-            f'/follow/': 'posts/follow.html',
+            '/follow/': 'posts/follow.html',
         }
 
     def test_posts_urls_guest_users(self):
