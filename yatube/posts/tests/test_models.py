@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.conf import settings
 
 from ..models import Group, Post
 
@@ -19,7 +20,7 @@ class PostModelTest(TestCase):
     def test_model__post_have_correct_object_names(self):
         """Проверяем, что у модели поста корректно работает __str__."""
         post = PostModelTest.post
-        expected_models_str = post.text[:post.MAGIC_NUMBER]
+        expected_models_str = post.text[:settings.LENGHT_STR_METHOD]
         self.assertEqual(expected_models_str, str(post))
 
     def test_verbose_name(self):
@@ -30,6 +31,7 @@ class PostModelTest(TestCase):
             'pub_date': 'дата публикации',
             'author': 'автор',
             'group': 'группа',
+            'image': 'Картинка',
         }
         for field, expected_value in field_verboses.items():
             with self.subTest(field=field):
@@ -44,6 +46,7 @@ class PostModelTest(TestCase):
             'text': 'введите текст поста',
             'author': 'выберете автора',
             'group': 'выберете группу',
+            'image': '',
         }
         for field, expected_value in field_help_text.items():
             with self.subTest(field=field):

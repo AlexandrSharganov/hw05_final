@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 from core.models import PubDateModel
 
@@ -67,11 +68,8 @@ class Post(PubDateModel):
         verbose_name_plural = 'посты'
         ordering = ('-pub_date',)
 
-    MAGIC_NUMBER = 15
-    # Не знаю правильно ли я объявил константу и надо было ли?
-
     def __str__(self):
-        return self.text[:self.MAGIC_NUMBER]
+        return self.text[:settings.LENGHT_STR_METHOD]
 
 
 class Comment(PubDateModel):
@@ -114,3 +112,9 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'подписка'
         verbose_name_plural = 'подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_follow'
+            ),
+        ]

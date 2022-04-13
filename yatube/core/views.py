@@ -9,5 +9,5 @@ def csrf_failure(request, reason=''):
     return render(request, 'core/403csrf.html')
 
 
-def page_has_broken(request, exception):
+def page_has_broken(request):
     return render(request, 'core/500.html')

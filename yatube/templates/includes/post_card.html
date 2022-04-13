@@ -1,7 +1,7 @@
 {% load thumbnail %}
 <article>
   <ul>
-    {% if index or group_list %}
+    {% if index or group_list or follow %}
       <li>
         Автор: {{ post.author.get_full_name }}
         <a href="{% url 'posts:profile' post.author.username %}">все посты пользователя</a>
@@ -19,7 +19,7 @@
   </p>
   <a href="{% url 'posts:post_detail' post.pk %}">подробная информация </a>
 </article>
-{% if index or profile %}
+{% if index or profile or follow  %}
   {% if post.group %}
     <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
   {% endif %}

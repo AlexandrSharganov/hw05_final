@@ -7,6 +7,7 @@ from django import forms
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
 
 from posts.models import Post, User, Group, Comment, Follow
 
@@ -141,7 +142,7 @@ class PostPagesTests(TestCase):
         self.assertEqual(comments, self.test_comment)
 
     def test_create_post_show_correct_context(self):
-        """Тест проверяет контекст формы при создании поста."""
+        """Тест проверяет контекст формы создания поста."""
         response = self.authorized_client.get(reverse(
             'posts:post_create',)
         )
@@ -154,8 +155,24 @@ class PostPagesTests(TestCase):
                 form_field = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_field, expected)
 
+    def test_create_post_show_correct_context(self):
+        """Тест проверяет контекст формы создания комментария."""
+        response = self.authorized_client.get(
+            reverse(
+                'posts:post_detail',
+                kwargs={'post_id': self.test_post.pk}
+            )
+        )
+        form_fields = {
+            'text': forms.fields.CharField,
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_field = response.context.get('form').fields.get(value)
+                self.assertIsInstance(form_field, expected)
+
     def test_edit_post_show_correct_context(self):
-        """Тест проверяет контекст формы при редактировании поста."""
+        """Тест проверяет контекст формы редактирования поста."""
         response = self.authorized_author.get(reverse(
             'posts:post_edit',
             kwargs={'post_id': self.test_post.pk},)
@@ -200,6 +217,10 @@ class PostPagesTests(TestCase):
         response = self.authorized_client.get(reverse('posts:posts'))
         second_object = response.content
         self.assertEqual(first_object, second_object)
+        cache.clear()
+        new_response = self.authorized_client.get(reverse('posts:posts'))
+        third_object = new_response.content
+        self.assertNotEqual(second_object, third_object)
 
     def test_follow_page_show_correct_context(self):
         """Тест проверяет контекст при просмотре избранных авторов."""
@@ -217,6 +238,22 @@ class PostPagesTests(TestCase):
         self.authorized_client.get('/profile/TestAuthor/follow/')
         self.assertEqual(Follow.objects.count(), follow_count + 1)
         self.assertTrue(
+            Follow.objects.filter(
+                user=self.user,
+                author=self.test_author,
+            )
+        )
+
+    def test_profile_unfollow(self):
+        """Авторизованный пользователь удаляет подписку."""
+        Follow.objects.create(
+            user=self.user,
+            author=self.test_author
+        )
+        follow_count = Follow.objects.count()
+        self.authorized_client.get('/profile/TestAuthor/unfollow/')
+        self.assertEqual(Follow.objects.count(), follow_count - 1)
+        self.assertFalse(
             Follow.objects.filter(
                 user=self.user,
                 author=self.test_author,

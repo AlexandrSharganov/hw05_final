@@ -1,7 +1,8 @@
+from http import HTTPStatus
+
 from django.test import TestCase, Client
 
 from posts.models import User
-from http import HTTPStatus
 
 
 class UsersURLTests(TestCase):

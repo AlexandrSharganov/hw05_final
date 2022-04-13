@@ -24,6 +24,7 @@ def index(request):
     page_obj = paginator_use(request, posts, settings.AMOUNT_POSTS)
     context = {
         'page_obj': page_obj,
+        'index': True,
     }
     return render(request, template, context)
 
@@ -43,13 +44,12 @@ def profile(request, username):
     author = get_object_or_404(User, username=username)
     posts = author.posts.select_related('group').all()
     page_obj = paginator_use(request, posts, settings.AMOUNT_POSTS)
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
+    following = (request.user.is_authenticated) and (
+        Follow.objects.filter(
             user=request.user,
             author=author,
-        )
-    else:
-        following = None
+        ).exists()
+    )
     context = {
         'author': author,
         'page_obj': page_obj,
@@ -79,7 +79,7 @@ def post_create(request):
         post.save()
         return redirect('posts:profile', request.user)
     context = {
-        'form': form
+        'form': form,
     }
     return render(request, 'posts/create_post.html', context)
 
@@ -119,11 +119,13 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     template = 'posts/follow.html'
-    authors_ids = request.user.follower.values_list('author', flat=True)
-    posts = Post.objects.filter(author__in=authors_ids)
+    posts = Post.objects.select_related('author', 'group').filter(
+        author__following__user=request.user
+    )
     page_obj = paginator_use(request, posts, settings.AMOUNT_POSTS)
     context = {
         'page_obj': page_obj,
+        'follow': True,
     }
     return render(request, template, context)
 
@@ -132,15 +134,10 @@ def follow_index(request):
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
     if request.user != author:
-        follow = Follow.objects.filter(
+        Follow.objects.get_or_create(
             user=request.user,
             author=author,
         )
-        if not follow.exists():
-            Follow.objects.create(
-                user=request.user,
-                author=author
-            )
     return redirect('posts:profile', username)
 
 

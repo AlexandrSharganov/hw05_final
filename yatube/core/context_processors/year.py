@@ -2,7 +2,8 @@ from django.utils import timezone
 
 
 def year(request):
-    year = timezone.now()
+    now = timezone.now()
+    year = now.strftime('%Y')
     return {
         'year': year,
     }

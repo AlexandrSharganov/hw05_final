@@ -56,9 +56,22 @@ class TaskCreateFormTests(TestCase):
             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
             b'\x0A\x00\x3B'
         )
+        self.anouther_small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3A'
+        )
         self.uploaded = SimpleUploadedFile(
             name='small.gif',
             content=self.small_gif,
+            content_type='image/gif'
+        )
+        self.another_uploaded = SimpleUploadedFile(
+            name='another_small.gif',
+            content=self.anouther_small_gif,
             content_type='image/gif'
         )
 
@@ -119,13 +132,40 @@ class TaskCreateFormTests(TestCase):
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(
             Post.objects.filter(
-                text='Тестовое редактирование поста автором'
-            ).filter(
-                author=self.test_author
-            ).filter(
-                group=self.test_group
-            ).filter(
-                pub_date=self.test_post.pub_date
+                text='Тестовое редактирование поста автором',
+                author=self.test_author,
+                group=self.test_group,
+                pub_date=self.test_post.pub_date,
+            ).exists()
+        )
+        self.assertRedirects(response, reverse(
+            'posts:post_detail',
+            kwargs={'post_id': self.test_post.pk}))
+
+    def test_edit_post_by_author(self):
+        """
+        Авторизованный пользователь пытается отредактировать
+        свой пост с заменой картинки.
+        """
+        posts_count = Post.objects.count()
+        form_data = {
+            'text': 'Тестовое редактирование поста автором',
+            'group': self.test_group.pk,
+            'image': self.another_uploaded,
+        }
+        response = self.authorized_author.post(
+            reverse('posts:post_edit', kwargs={'post_id': self.test_post.pk}),
+            data=form_data,
+            follow=True
+        )
+        self.assertEqual(Post.objects.count(), posts_count)
+        self.assertTrue(
+            Post.objects.filter(
+                text='Тестовое редактирование поста автором',
+                author=self.test_author,
+                group=self.test_group,
+                pub_date=self.test_post.pub_date,
+                image='posts/another_small.gif',
             ).exists()
         )
         self.assertRedirects(response, reverse(
@@ -229,6 +269,32 @@ class TaskCreateFormTests(TestCase):
         self.assertRedirects(response, reverse(
             'posts:post_detail',
             kwargs={'post_id': self.test_post.pk}))
+
+
+class TaskCreateComments(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.test_author = User.objects.create(
+            username='TestAuthor',
+        )
+        cls.test_group = Group.objects.create(
+            title='Тестовое название группы',
+            slug='test-group',
+            description='Тестовое описание',
+        )
+        cls.test_post = Post.objects.create(
+            title='Тестовый заголовок',
+            text='Тестовый текст',
+            author=cls.test_author,
+            group=cls.test_group,
+        )
+
+    def setUp(self):
+        self.guest_client = Client()
+        self.user = User.objects.create_user(username='TestUser')
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user)
 
     def test_create_comment_authorized_client(self):
         """Создание комментария авторизованным пользователем."""
