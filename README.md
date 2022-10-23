@@ -17,6 +17,4 @@ python3 manage.py runserver
 ЯндексПрактикум
 
 ## Над проектом работал студент Практикума
-Александр Шарганов
-
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+- [Александр Шарганов](https://github.com/AlexandrSharganov)
